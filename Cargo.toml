@@ -1,6 +1,16 @@
 [package]
 name = "anew"
-version = "0.1.0"
+version = "1.0.0"
+authors = ["Roman Kvasnytskyi <roman@kvasnytskyi.net>"]
 edition = "2021"
 
 [dependencies]
+pico-args = { version = "0.5.0", features = ["combined-flags"] }
+
+[dev-dependencies]
+predicates = "3.1.2"
+assert_cmd = "2.0.16"
+
+[[bin]]
+name = "anew"
+path = "src/main.rs"
