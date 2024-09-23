@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-release:
     name: Build and Release
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -34,6 +34,12 @@ jobs:
           target: ${{ matrix.target }}
           override: true
 
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest'
+        uses: actions/setup-msvc@v1
+        with:
+          vs-version: 'latest'
+
       - name: Cache Cargo registry
         uses: actions/cache@v3
         with:
@@ -49,11 +55,25 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
+      - name: Archive Binary
+        if: matrix.os != 'windows-latest'
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/anew dist/${{ matrix.artifact }}
+        shell: bash
+
+      - name: Archive Binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir dist
+          copy target\\${{ matrix.target }}\\release\\anew.exe dist\\${{ matrix.artifact }}
+        shell: cmd
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact }}
-          path: target/${{ matrix.target }}/release/anew*
+          path: dist/${{ matrix.artifact }}
           retention-days: 1
 
   create-release:
